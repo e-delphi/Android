@@ -1,0 +1,95 @@
+object Inicio: TInicio
+  Left = 0
+  Top = 0
+  Caption = 'Captura Audio'
+  ClientHeight = 480
+  ClientWidth = 271
+  FormFactor.Width = 320
+  FormFactor.Height = 480
+  FormFactor.Devices = [Desktop]
+  OnCreate = FormCreate
+  DesignerMasterStyle = 3
+  object btnCriar: TButton
+    Align = Top
+    Margins.Left = 20.000000000000000000
+    Margins.Top = 10.000000000000000000
+    Margins.Right = 20.000000000000000000
+    Position.X = 20.000000000000000000
+    Position.Y = 77.000000000000000000
+    Size.Width = 231.000000000000000000
+    Size.Height = 57.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 4
+    Text = 'Criar'
+    OnClick = btnCriarClick
+  end
+  object btnCapturar: TButton
+    Align = Top
+    Margins.Left = 20.000000000000000000
+    Margins.Top = 10.000000000000000000
+    Margins.Right = 20.000000000000000000
+    Position.X = 20.000000000000000000
+    Position.Y = 144.000000000000000000
+    Size.Width = 231.000000000000000000
+    Size.Height = 57.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 2
+    Text = 'Capturar'
+    OnClick = btnCapturarClick
+  end
+  object btnPermissao: TButton
+    Align = Top
+    Margins.Left = 20.000000000000000000
+    Margins.Top = 10.000000000000000000
+    Margins.Right = 20.000000000000000000
+    Position.X = 20.000000000000000000
+    Position.Y = 10.000000000000000000
+    Size.Width = 231.000000000000000000
+    Size.Height = 57.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 3
+    Text = 'Permiss'#227'o'
+    OnClick = btnPermissaoClick
+  end
+  object btnParar: TButton
+    Align = Top
+    Margins.Left = 20.000000000000000000
+    Margins.Top = 10.000000000000000000
+    Margins.Right = 20.000000000000000000
+    Position.X = 20.000000000000000000
+    Position.Y = 211.000000000000000000
+    Size.Width = 231.000000000000000000
+    Size.Height = 57.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 1
+    Text = 'Parar'
+    OnClick = btnPararClick
+  end
+  object btnDestruir: TButton
+    Align = Top
+    Margins.Left = 20.000000000000000000
+    Margins.Top = 10.000000000000000000
+    Margins.Right = 20.000000000000000000
+    Position.X = 20.000000000000000000
+    Position.Y = 278.000000000000000000
+    Size.Width = 231.000000000000000000
+    Size.Height = 57.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 0
+    Text = 'Destruir'
+    OnClick = btnDestruirClick
+  end
+  object mmLog: TMemo
+    Touch.InteractiveGestures = [Pan, LongTap, DoubleTap]
+    DataDetectorTypes = []
+    Align = Bottom
+    Anchors = [akLeft, akTop, akRight, akBottom]
+    Position.Y = 352.000000000000000000
+    Size.Width = 271.000000000000000000
+    Size.Height = 128.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 5
+    Viewport.Width = 263.000000000000000000
+    Viewport.Height = 120.000000000000000000
+  end
+end
