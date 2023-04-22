@@ -1,0 +1,81 @@
+object Inicio: TInicio
+  Left = 0
+  Top = 0
+  Caption = 'Captura Audio'
+  ClientHeight = 480
+  ClientWidth = 271
+  FormFactor.Width = 320
+  FormFactor.Height = 480
+  FormFactor.Devices = [Desktop]
+  DesignerMasterStyle = 3
+  object btnCapturar: TButton
+    Align = Top
+    Margins.Left = 20.000000000000000000
+    Margins.Top = 10.000000000000000000
+    Margins.Right = 20.000000000000000000
+    Position.X = 20.000000000000000000
+    Position.Y = 77.000000000000000000
+    Size.Width = 231.000000000000000000
+    Size.Height = 57.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 3
+    Text = 'Capturar'
+    OnClick = btnCapturarClick
+  end
+  object btnPermissao: TButton
+    Align = Top
+    Margins.Left = 20.000000000000000000
+    Margins.Top = 10.000000000000000000
+    Margins.Right = 20.000000000000000000
+    Position.X = 20.000000000000000000
+    Position.Y = 10.000000000000000000
+    Size.Width = 231.000000000000000000
+    Size.Height = 57.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 4
+    Text = 'Permiss'#227'o'
+    OnClick = btnPermissaoClick
+  end
+  object btnPararCaptura: TButton
+    Align = Top
+    Margins.Left = 20.000000000000000000
+    Margins.Top = 10.000000000000000000
+    Margins.Right = 20.000000000000000000
+    Position.X = 20.000000000000000000
+    Position.Y = 144.000000000000000000
+    Size.Width = 231.000000000000000000
+    Size.Height = 57.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 2
+    Text = 'Parar Captura'
+    OnClick = btnPararCapturaClick
+  end
+  object btnReproduzir: TButton
+    Align = Top
+    Margins.Left = 20.000000000000000000
+    Margins.Top = 10.000000000000000000
+    Margins.Right = 20.000000000000000000
+    Position.X = 20.000000000000000000
+    Position.Y = 211.000000000000000000
+    Size.Width = 231.000000000000000000
+    Size.Height = 57.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 0
+    Text = 'Reproduzir'
+    OnClick = btnReproduzirClick
+  end
+  object btnPararReproducao: TButton
+    Align = Top
+    Margins.Left = 20.000000000000000000
+    Margins.Top = 10.000000000000000000
+    Margins.Right = 20.000000000000000000
+    Position.X = 20.000000000000000000
+    Position.Y = 278.000000000000000000
+    Size.Width = 231.000000000000000000
+    Size.Height = 57.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 1
+    Text = 'Parar Reprodu'#231#227'o'
+    OnClick = btnPararReproducaoClick
+  end
+end
