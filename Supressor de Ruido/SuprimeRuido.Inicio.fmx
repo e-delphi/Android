@@ -2,11 +2,13 @@ object Inicio: TInicio
   Left = 0
   Top = 0
   Caption = 'Captura Audio'
-  ClientHeight = 480
-  ClientWidth = 271
+  ClientHeight = 662
+  ClientWidth = 368
   FormFactor.Width = 320
   FormFactor.Height = 480
   FormFactor.Devices = [Desktop]
+  OnCreate = FormCreate
+  OnDestroy = FormDestroy
   DesignerMasterStyle = 3
   object btnCapturar: TButton
     Align = Top
@@ -14,11 +16,11 @@ object Inicio: TInicio
     Margins.Top = 10.000000000000000000
     Margins.Right = 20.000000000000000000
     Position.X = 20.000000000000000000
-    Position.Y = 113.000000000000000000
-    Size.Width = 231.000000000000000000
+    Position.Y = 77.000000000000000000
+    Size.Width = 328.000000000000000000
     Size.Height = 57.000000000000000000
     Size.PlatformDefault = False
-    TabOrder = 3
+    TabOrder = 5
     Text = 'Capturar'
     OnClick = btnCapturarClick
   end
@@ -29,11 +31,11 @@ object Inicio: TInicio
     Margins.Right = 20.000000000000000000
     Position.X = 20.000000000000000000
     Position.Y = 10.000000000000000000
-    Size.Width = 231.000000000000000000
+    Size.Width = 328.000000000000000000
     Size.Height = 57.000000000000000000
     Size.PlatformDefault = False
-    TabOrder = 4
-    Text = 'Permiss'#227'o'
+    TabOrder = 7
+    Text = 'Permiss'#227'o Capturar Audio'
     OnClick = btnPermissaoClick
   end
   object btnPararCaptura: TButton
@@ -42,11 +44,11 @@ object Inicio: TInicio
     Margins.Top = 10.000000000000000000
     Margins.Right = 20.000000000000000000
     Position.X = 20.000000000000000000
-    Position.Y = 180.000000000000000000
-    Size.Width = 231.000000000000000000
+    Position.Y = 144.000000000000000000
+    Size.Width = 328.000000000000000000
     Size.Height = 57.000000000000000000
     Size.PlatformDefault = False
-    TabOrder = 2
+    TabOrder = 4
     Text = 'Parar Captura'
     OnClick = btnPararCapturaClick
   end
@@ -56,8 +58,8 @@ object Inicio: TInicio
     Margins.Top = 10.000000000000000000
     Margins.Right = 20.000000000000000000
     Position.X = 20.000000000000000000
-    Position.Y = 247.000000000000000000
-    Size.Width = 231.000000000000000000
+    Position.Y = 412.000000000000000000
+    Size.Width = 328.000000000000000000
     Size.Height = 57.000000000000000000
     Size.PlatformDefault = False
     TabOrder = 0
@@ -70,20 +72,54 @@ object Inicio: TInicio
     Margins.Top = 10.000000000000000000
     Margins.Right = 20.000000000000000000
     Position.X = 20.000000000000000000
-    Position.Y = 314.000000000000000000
-    Size.Width = 231.000000000000000000
+    Position.Y = 479.000000000000000000
+    Size.Width = 328.000000000000000000
     Size.Height = 57.000000000000000000
     Size.PlatformDefault = False
-    TabOrder = 1
+    TabOrder = 3
     Text = 'Parar Reprodu'#231#227'o'
     OnClick = btnPararReproducaoClick
   end
-  object swAudio: TSwitch
+  object btnDenoise: TButton
     Align = Top
-    IsChecked = False
+    Margins.Left = 20.000000000000000000
     Margins.Top = 10.000000000000000000
-    Position.X = 114.000000000000000000
-    Position.Y = 77.000000000000000000
-    TabOrder = 5
+    Margins.Right = 20.000000000000000000
+    Position.X = 20.000000000000000000
+    Position.Y = 345.000000000000000000
+    Size.Width = 328.000000000000000000
+    Size.Height = 57.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 1
+    Text = 'Remover Ruido'
+    OnClick = btnDenoiseClick
+  end
+  object btnSalvar: TButton
+    Align = Top
+    Margins.Left = 20.000000000000000000
+    Margins.Top = 10.000000000000000000
+    Margins.Right = 20.000000000000000000
+    Position.X = 20.000000000000000000
+    Position.Y = 278.000000000000000000
+    Size.Width = 328.000000000000000000
+    Size.Height = 57.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 2
+    Text = 'Salvar WAV'
+    OnClick = btnSalvarClick
+  end
+  object btnArmazenamento: TButton
+    Align = Top
+    Margins.Left = 20.000000000000000000
+    Margins.Top = 10.000000000000000000
+    Margins.Right = 20.000000000000000000
+    Position.X = 20.000000000000000000
+    Position.Y = 211.000000000000000000
+    Size.Width = 328.000000000000000000
+    Size.Height = 57.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 6
+    Text = 'Permiss'#227'o Armazenamento Interno'
+    OnClick = btnArmazenamentoClick
   end
 end

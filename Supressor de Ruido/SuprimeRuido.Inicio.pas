@@ -1,4 +1,4 @@
-﻿// Eduardo - 21/04/2023
+﻿// Eduardo - 14/05/2023
 unit SuprimeRuido.Inicio;
 
 interface
@@ -29,7 +29,15 @@ uses
   Androidapi.JNIBridge,
   Androidapi.Helpers,
   Androidapi.JNI.Os,
-  Androidapi.Jni.JavaTypes;
+  Androidapi.Jni.JavaTypes,
+
+  FMX.Platform.Android,
+  System.IOUtils,
+  FMX.Helpers.Android,
+  Androidapi.JNI.GraphicsContentViewText,
+
+  rnnoise.wrapper,
+  wav;
 
 type
   TInicio = class(TForm)
@@ -38,18 +46,22 @@ type
     btnPararCaptura: TButton;
     btnReproduzir: TButton;
     btnPararReproducao: TButton;
-    swAudio: TSwitch;
+    btnDenoise: TButton;
+    btnSalvar: TButton;
+    btnArmazenamento: TButton;
     procedure btnCapturarClick(Sender: TObject);
     procedure btnPermissaoClick(Sender: TObject);
     procedure btnPararCapturaClick(Sender: TObject);
     procedure btnReproduzirClick(Sender: TObject);
     procedure btnPararReproducaoClick(Sender: TObject);
+    procedure btnDenoiseClick(Sender: TObject);
+    procedure FormCreate(Sender: TObject);
+    procedure FormDestroy(Sender: TObject);
+    procedure btnSalvarClick(Sender: TObject);
+    procedure btnArmazenamentoClick(Sender: TObject);
   private
     // Captura
     FRecorder: JAudioRecord;
-    FNoiseSuppressor: JNoiseSuppressor;
-    FAutomaticGainControl: JAutomaticGainControl;
-    FAcousticEchoCanceler: JAcousticEchoCanceler;
     FBytes: TJavaArray<Byte>;
     ThreadLoopCaptura: ITask;
 
@@ -57,23 +69,36 @@ type
     FPlay: JAudioTrack;
     ThreadLoopReproducao: ITask;
 
+    // Rnnoise
+    Denoiser: TDenoiser;
+
     // Captura
     procedure LoopCaptura;
     procedure LoopReproducao;
   public
-    AudioCapturado: TArray<TIdBytes>;
+    AudioCapturado: TWaveformSamples;
   end;
 
 var
   Inicio: TInicio;
 
 const
-  sampleRate: Integer = 48000; // 11025;
+  sampleRate: Integer = 48000;
   RECORDSTATE_RECORDING = 3;
 
 implementation
 
 {$R *.fmx}
+
+procedure TInicio.FormCreate(Sender: TObject);
+begin
+  Denoiser := TDenoiser.Create;
+end;
+
+procedure TInicio.FormDestroy(Sender: TObject);
+begin
+  FreeAndNil(Denoiser);
+end;
 
 procedure TInicio.btnPermissaoClick(Sender: TObject);
 begin
@@ -95,20 +120,19 @@ end;
 procedure TInicio.LoopCaptura;
 var
   Len: Integer;
-  Bytes: TIdBytes;
+  Bytes: TWaveformSamples;
 begin
-  while FRecorder.getRecordingState = RECORDSTATE_RECORDING do
+  while (FRecorder as JAudioRecord).getRecordingState = RECORDSTATE_RECORDING do
   begin
-    FRecorder.read(FBytes, 0, FBytes.Length);
+    Len := (FRecorder as JAudioRecord).read(FBytes, 0, FBytes.Length);
 
-    Len := FBytes.Length;
     Bytes := [];
     SetLength(Bytes, Len);
-    if Len > 0 then
+    if FBytes.Length > 0 then
       System.Move(FBytes.Data^, Bytes[0], Len);
 
     // Pacote de audio capturado -> Bytes
-    AudioCapturado := AudioCapturado + [Bytes];
+    AudioCapturado := AudioCapturado + Bytes;
   end;
 end;
 
@@ -139,18 +163,6 @@ begin
   FBytes := TJavaArray<Byte>.Create(minBufSize * 4);
   FRecorder := TJAudioRecord.JavaClass.init(TJMediaRecorder_AudioSource.JavaClass.MIC, sampleRate, channelConfig, audioFormat, minBufSize * 4);
 
-  // Efeitos de audio -- Ainda não deu certo
-  FNoiseSuppressor := TJNoiseSuppressor.JavaClass.create(FRecorder.getAudioSessionId);
-  FAutomaticGainControl := TJAutomaticGainControl.JavaClass.create(FRecorder.getAudioSessionId);
-  FAcousticEchoCanceler := TJAcousticEchoCanceler.JavaClass.create(FRecorder.getAudioSessionId);
-
-  if Assigned(FNoiseSuppressor) and FNoiseSuppressor.hasControl then
-    FNoiseSuppressor.setEnabled(swAudio.IsChecked);
-  if Assigned(FAutomaticGainControl) and FAutomaticGainControl.hasControl then
-    FAutomaticGainControl.setEnabled(swAudio.IsChecked);
-  if Assigned(FAcousticEchoCanceler) and FAcousticEchoCanceler.hasControl then
-    FAcousticEchoCanceler.setEnabled(swAudio.IsChecked);
-
   FRecorder.startRecording;
 
   ThreadLoopCaptura := TTask.Run(LoopCaptura);
@@ -161,22 +173,87 @@ begin
   FRecorder.stop;
 end;
 
+procedure TInicio.btnArmazenamentoClick(Sender: TObject);
+begin
+  if PermissionsService.IsPermissionGranted(JStringToString(TJManifest_permission.JavaClass.WRITE_EXTERNAL_STORAGE)) then
+    Exit;
+
+  PermissionsService.RequestPermissions(
+    [JStringToString(TJManifest_permission.JavaClass.WRITE_EXTERNAL_STORAGE)],
+    procedure(const APermissions: TArray<String>; const AGrantResults: TArray<TPermissionStatus>)
+    begin
+      if (Length(AGrantResults) = 1) and (AGrantResults[0] = TPermissionStatus.Granted) then
+        ShowMessage('Acesso concedido!')
+      else
+        ShowMessage('Acesso negado!')
+    end
+  );
+end;
+
+procedure TInicio.btnSalvarClick(Sender: TObject);
+begin
+  if not PermissionsService.IsPermissionGranted(JStringToString(TJManifest_permission.JavaClass.WRITE_EXTERNAL_STORAGE)) then
+  begin
+    ShowMessage('Permita primeiro que o aplicativo grave no armazenamento interno!');
+    Exit;
+  end;
+
+  wav.SaveWaveToFile(sampleRate, 16, AudioCapturado, TPath.Combine(TPath.GetSharedMusicPath, 'teste.wav'));
+end;
+
+procedure TInicio.btnDenoiseClick(Sender: TObject);
+var
+  Entrada: TDenoiser.TAudioFrame;
+  Saida: TDenoiser.TAudioFrame;
+  I: Integer;
+  J: Integer;
+  K: Integer;
+begin
+  J := 0;
+  System.FillChar(Entrada, SizeOf(Entrada), 0);
+  System.FillChar(Saida, SizeOf(Saida), 0);
+
+  for I := 0 to Length(AudioCapturado) -1 do
+  begin
+    if (I > 0) and (I mod 480 = 0) then
+    begin
+      Denoiser.Process(Entrada, Saida);
+
+      for K := 0 to Length(Saida) -1 do
+        AudioCapturado[I - 480 + K] := Trunc(Saida[K]);
+
+      J := 0;
+    end;
+
+    Entrada[J] := AudioCapturado[I];
+    Inc(J);
+  end;
+end;
+
 procedure TInicio.LoopReproducao;
 var
   Audio: TJavaArray<Byte>;
+  Bytes: TArray<SmallInt>;
   I: Integer;
-  Bytes: TIdBytes;
+  J: Integer;
 begin
-  for I := 0 to Pred(Length(AudioCapturado)) do
+  SetLength(Bytes, FBytes.Length);
+
+  J := 0;
+  for I := 0 to Length(AudioCapturado) -1 do
   begin
-    Bytes := AudioCapturado[I];
+    if (I > 0) and (I mod FBytes.Length = 0) then
+    begin
+      Audio := TJavaArray<Byte>.Create(Length(Bytes));
+      if Length(Bytes) > 0 then
+        System.Move(Bytes[0], Audio.Data^, Length(Bytes));
+      (FPlay as JAudioTrack).write(Audio, 0, Audio.Length);
 
-    Audio := TJavaArray<Byte>.Create(Length(Bytes));
+      J := 0;
+    end;
 
-    if Length(Bytes) > 0 then
-      System.Move(Bytes[0], Audio.Data^, Length(Bytes));
-
-    (FPlay AS JAudioTrack).write(Audio, 0, Audio.Length);
+    Bytes[J] := AudioCapturado[I];
+    Inc(J);
   end;
 end;
 

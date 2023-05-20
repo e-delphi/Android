@@ -32,7 +32,6 @@
 *.bpl
 *.bpi
 *.dcp
-*.so
 *.apk
 *.drc
 *.map
@@ -41,7 +40,6 @@
 *.tds
 *.dcu
 *.lib
-*.a
 *.o
 *.ocx
 
@@ -60,6 +58,9 @@
 # Delphi history and backups
 __history/
 __recovery/
+Supressor de Ruido/Android/
+Reproduzir Audio/Android/
+Capturar Audio/Android/
 *.~*
 
 # Castalia statistics file (since XE7 Castalia is distributed with Delphi)
