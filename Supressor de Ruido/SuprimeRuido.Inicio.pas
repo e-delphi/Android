@@ -62,7 +62,7 @@ type
   private
     // Captura
     FRecorder: JAudioRecord;
-    FBytes: TJavaArray<Byte>;
+    FBytes: TJavaArray<Single>;
     ThreadLoopCaptura: ITask;
 
     // Reprodução
@@ -76,7 +76,7 @@ type
     procedure LoopCaptura;
     procedure LoopReproducao;
   public
-    AudioCapturado: TWaveformSamples;
+    AudioCapturado: TArray<Single>;
   end;
 
 var
@@ -107,7 +107,7 @@ begin
 
   PermissionsService.RequestPermissions(
     [JStringToString(TJManifest_permission.JavaClass.RECORD_AUDIO)],
-    procedure(const APermissions: TArray<String>; const AGrantResults: TArray<TPermissionStatus>)
+    procedure(const APermissions: TClassicStringDynArray; const AGrantResults: TClassicPermissionStatusDynArray)
     begin
       if (Length(AGrantResults) = 1) and (AGrantResults[0] = TPermissionStatus.Granted) then
         ShowMessage('Acesso concedido!')
@@ -115,25 +115,6 @@ begin
         ShowMessage('Acesso negado!')
     end
   );
-end;
-
-procedure TInicio.LoopCaptura;
-var
-  Len: Integer;
-  Bytes: TWaveformSamples;
-begin
-  while (FRecorder as JAudioRecord).getRecordingState = RECORDSTATE_RECORDING do
-  begin
-    Len := (FRecorder as JAudioRecord).read(FBytes, 0, FBytes.Length);
-
-    Bytes := [];
-    SetLength(Bytes, Len);
-    if FBytes.Length > 0 then
-      System.Move(FBytes.Data^, Bytes[0], Len);
-
-    // Pacote de audio capturado -> Bytes
-    AudioCapturado := AudioCapturado + Bytes;
-  end;
 end;
 
 procedure TInicio.btnCapturarClick(Sender: TObject);
@@ -157,15 +138,35 @@ begin
   end;
 
   channelConfig := TJAudioFormat.JavaClass.CHANNEL_IN_MONO;
-  audioFormat := TJAudioFormat.JavaClass.ENCODING_PCM_16BIT;
+  audioFormat := TJAudioFormat.JavaClass.ENCODING_PCM_FLOAT;
   minBufSize := TJAudioRecord.JavaClass.getMinBufferSize(sampleRate, channelConfig, audioFormat);
 
-  FBytes := TJavaArray<Byte>.Create(minBufSize * 4);
-  FRecorder := TJAudioRecord.JavaClass.init(TJMediaRecorder_AudioSource.JavaClass.MIC, sampleRate, channelConfig, audioFormat, minBufSize * 4);
+  FBytes := TJavaArray<Single>.Create(minBufSize div SizeOf(Single));
+  FRecorder := TJAudioRecord.JavaClass.init(TJMediaRecorder_AudioSource.JavaClass.MIC, sampleRate, channelConfig, audioFormat, minBufSize);
 
   FRecorder.startRecording;
 
   ThreadLoopCaptura := TTask.Run(LoopCaptura);
+end;
+
+procedure TInicio.LoopCaptura;
+var
+  Len: Integer;
+  Bytes: TArray<Single>;
+begin
+  Sleep(100);
+  while (FRecorder as JAudioRecord).getRecordingState = RECORDSTATE_RECORDING do
+  begin
+    Len := (FRecorder as JAudioRecord).read(FBytes, 0, FBytes.Length, 0);
+
+    Bytes := [];
+    SetLength(Bytes, Len);
+    if FBytes.Length > 0 then
+      System.Move(FBytes.Data^, Bytes[0], Len);
+
+    // Pacote de audio capturado -> Bytes
+    AudioCapturado := AudioCapturado + Bytes;
+  end;
 end;
 
 procedure TInicio.btnPararCapturaClick(Sender: TObject);
@@ -180,7 +181,7 @@ begin
 
   PermissionsService.RequestPermissions(
     [JStringToString(TJManifest_permission.JavaClass.WRITE_EXTERNAL_STORAGE)],
-    procedure(const APermissions: TArray<String>; const AGrantResults: TArray<TPermissionStatus>)
+    procedure(const APermissions: TClassicStringDynArray; const AGrantResults: TClassicPermissionStatusDynArray)
     begin
       if (Length(AGrantResults) = 1) and (AGrantResults[0] = TPermissionStatus.Granted) then
         ShowMessage('Acesso concedido!')
@@ -198,7 +199,7 @@ begin
     Exit;
   end;
 
-  wav.SaveWaveToFile(sampleRate, 16, AudioCapturado, TPath.Combine(TPath.GetSharedMusicPath, 'teste.wav'));
+//  wav.SaveWaveToFile(sampleRate, 16, AudioCapturado, TPath.Combine(TPath.GetSharedMusicPath, 'teste.wav'));
 end;
 
 procedure TInicio.btnDenoiseClick(Sender: TObject);
@@ -220,39 +221,12 @@ begin
       Denoiser.Process(Entrada, Saida);
 
       for K := 0 to Length(Saida) -1 do
-        AudioCapturado[I - 480 + K] := Trunc(Saida[K]);
+        AudioCapturado[I - 480 + K] := Saida[K];
 
       J := 0;
     end;
 
     Entrada[J] := AudioCapturado[I];
-    Inc(J);
-  end;
-end;
-
-procedure TInicio.LoopReproducao;
-var
-  Audio: TJavaArray<Byte>;
-  Bytes: TArray<SmallInt>;
-  I: Integer;
-  J: Integer;
-begin
-  SetLength(Bytes, FBytes.Length);
-
-  J := 0;
-  for I := 0 to Length(AudioCapturado) -1 do
-  begin
-    if (I > 0) and (I mod FBytes.Length = 0) then
-    begin
-      Audio := TJavaArray<Byte>.Create(Length(Bytes));
-      if Length(Bytes) > 0 then
-        System.Move(Bytes[0], Audio.Data^, Length(Bytes));
-      (FPlay as JAudioTrack).write(Audio, 0, Audio.Length);
-
-      J := 0;
-    end;
-
-    Bytes[J] := AudioCapturado[I];
     Inc(J);
   end;
 end;
@@ -278,6 +252,33 @@ begin
 
   (FPlay as JAudioTrack).play;
   ThreadLoopReproducao := TTask.Run(LoopReproducao);
+end;
+
+procedure TInicio.LoopReproducao;
+var
+  Audio: TJavaArray<Single>;
+  Bytes: TArray<Single>;
+  I: Integer;
+  J: Integer;
+begin
+  SetLength(Bytes, FBytes.Length);
+
+  J := 0;
+  for I := 0 to Length(AudioCapturado) -1 do
+  begin
+    if (I > 0) and (I mod FBytes.Length = 0) then
+    begin
+      Audio := TJavaArray<Single>.Create(Length(Bytes));
+      if Length(Bytes) > 0 then
+        System.Move(Bytes[0], Audio.Data^, Length(Bytes));
+      (FPlay as JAudioTrack).write(Audio, 0, Audio.Length, 0);
+
+      J := 0;
+    end;
+
+    Bytes[J] := AudioCapturado[I];
+    Inc(J);
+  end;
 end;
 
 procedure TInicio.btnPararReproducaoClick(Sender: TObject);

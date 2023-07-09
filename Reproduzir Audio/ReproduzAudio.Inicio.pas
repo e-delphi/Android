@@ -78,7 +78,7 @@ begin
 
   PermissionsService.RequestPermissions(
     [JStringToString(TJManifest_permission.JavaClass.RECORD_AUDIO)],
-    procedure(const APermissions: TArray<String>; const AGrantResults: TArray<TPermissionStatus>)
+    procedure(const APermissions: TClassicStringDynArray; const AGrantResults: TClassicPermissionStatusDynArray)
     begin
       if (Length(AGrantResults) = 1) and (AGrantResults[0] = TPermissionStatus.Granted) then
         ShowMessage('Acesso concedido!')

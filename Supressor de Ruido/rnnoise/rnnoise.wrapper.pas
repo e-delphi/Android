@@ -66,17 +66,8 @@ begin
 end;
 
 function TDenoiser.Process(const Input: TAudioFrame; var Output: TAudioFrame): Single;
-var
-  I: Integer;
-  Buffer: TDenoiser.TAudioFrame;
 begin
-  for I := 0 to FRAME_SIZE - 1 do
-    Buffer[I] := Input[I];
-
-  Result := rnnoise_process_frame(state, @Buffer[0], @Buffer[0]);
-
-  for I := 0 to FRAME_SIZE - 1 do
-    Output[I] := Buffer[I];
+  Result := rnnoise_process_frame(state, @Output[0], @Input[0]);
 end;
 
 end.

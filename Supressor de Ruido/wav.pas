@@ -7,6 +7,7 @@ type
   TWaveformSample = SmallInt; // Integer 32-bit; -2147483648..2147483647; SmallInt 16-bit -32768..32767
   TWaveformSamples = packed array of TWaveformSample;
 
+function Teste(const FileName: string): TWaveformSamples;
 procedure SaveWaveToFile(const SamplesPerSec: Integer; const BitsPerSample: Integer; const WaveData: TWaveformSamples; const FileName: string);
 
 implementation
@@ -149,24 +150,27 @@ begin
   end;
 end;
 
-//const
-//  SamplesPerSec = 48000;
-//  BitsPerSample = 16;
-//  Duracao = 3000;
-//  Volume = 50;
-//var
-//  Sp1, Sp2: TWaveformSamples;
-//  Samples: TWaveformSamples;
-//begin
-//  Sp1 := CreatePureSineTone(60, Duracao, Volume, SamplesPerSec, BitsPerSample);
-//  Sp2 := CreatePureSineTone(600, Duracao, Volume, SamplesPerSec, BitsPerSample);
-//
-//  Samples := Crossfade(Sp1, Sp2, 500, SamplesPerSec);
-//
-//  SaveWaveToFile(
-//    SamplesPerSec,
-//    BitsPerSample,
-//    Samples,
-//    'D:\teste.wav'
-//  );
+function Teste(const FileName: string): TWaveformSamples;
+const
+  SamplesPerSec = 48000;
+  BitsPerSample = 16;
+  Duracao = 3000;
+  Volume = 50;
+var
+  Sp1, Sp2: TWaveformSamples;
+  Samples: TWaveformSamples;
+begin
+  Sp1 := CreatePureSineTone(60, Duracao, Volume, SamplesPerSec, BitsPerSample);
+  Sp2 := CreatePureSineTone(600, Duracao, Volume, SamplesPerSec, BitsPerSample);
+
+  Samples := Crossfade(Sp1, Sp2, 1000, SamplesPerSec);
+
+  SaveWaveToFile(
+    SamplesPerSec,
+    BitsPerSample,
+    Samples,
+    FileName
+  );
+end;
+
 end.
