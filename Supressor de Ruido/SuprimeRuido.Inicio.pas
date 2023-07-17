@@ -60,13 +60,22 @@ type
     procedure btnSalvarClick(Sender: TObject);
     procedure btnArmazenamentoClick(Sender: TObject);
   private
+    // Geral
+    FAudioFormat: Integer;
+    FChannelINConfig: Integer;
+    FChannelOUTConfig: Integer;
+    FMinINBuffSize: Integer;
+    FMinOUTBuffSize: Integer;
+    FSampleRate: Integer;
+    FAudioCapturado: TArray<Single>;
+
     // Captura
     FRecorder: JAudioRecord;
     FBytes: TJavaArray<Single>;
     ThreadLoopCaptura: ITask;
 
     // Reprodução
-    FPlay: JAudioTrack;
+    FPlayer: JAudioTrack;
     ThreadLoopReproducao: ITask;
 
     // Rnnoise
@@ -75,15 +84,12 @@ type
     // Captura
     procedure LoopCaptura;
     procedure LoopReproducao;
-  public
-    AudioCapturado: TArray<Single>;
   end;
 
 var
   Inicio: TInicio;
 
 const
-  sampleRate: Integer = 48000;
   RECORDSTATE_RECORDING = 3;
 
 implementation
@@ -92,7 +98,32 @@ implementation
 
 procedure TInicio.FormCreate(Sender: TObject);
 begin
-  Denoiser := TDenoiser.Create;
+  Denoiser          := TDenoiser.Create;
+  FSampleRate       := 48000;
+  FAudioFormat      := TJAudioFormat.JavaClass.ENCODING_PCM_FLOAT;
+  FChannelINConfig  := TJAudioFormat.JavaClass.CHANNEL_IN_MONO;
+  FChannelOUTConfig := TJAudioFormat.JavaClass.CHANNEL_OUT_MONO;
+  FMinINBuffSize    := TJAudioRecord.JavaClass.getMinBufferSize(FSampleRate, FChannelINConfig, FAudioFormat);
+  FMinOUTBuffSize   := TJAudioTrack.JavaClass.getMinBufferSize(FSampleRate, FChannelOUTConfig, FAudioFormat);
+
+  FBytes := TJavaArray<Single>.Create(FMinINBuffSize div SizeOf(Single));
+
+  FRecorder := TJAudioRecord.JavaClass.init(
+    TJMediaRecorder_AudioSource.JavaClass.MIC,
+    FSampleRate,
+    FChannelINConfig,
+    FAudioFormat,
+    FMinINBuffSize
+  );
+
+  FPlayer := TJAudioTrack.JavaClass.init(
+    TJAudioManager.JavaClass.STREAM_MUSIC,
+    FSampleRate,
+    FChannelOUTConfig,
+    FAudioFormat,
+    FMinOUTBuffSize,
+    TJAudioTrack.JavaClass.MODE_STREAM
+  );
 end;
 
 procedure TInicio.FormDestroy(Sender: TObject);
@@ -118,10 +149,6 @@ begin
 end;
 
 procedure TInicio.btnCapturarClick(Sender: TObject);
-var
-  channelConfig: Integer;
-  audioFormat: Integer;
-  minBufSize: Integer;
 begin
   if not PermissionsService.IsPermissionGranted(JStringToString(TJManifest_permission.JavaClass.RECORD_AUDIO)) then
   begin
@@ -129,20 +156,7 @@ begin
     Exit;
   end;
 
-  AudioCapturado := [];
-
-  if Assigned(FRecorder) then
-  begin
-    FRecorder := nil;
-    FBytes.DisposeOf;
-  end;
-
-  channelConfig := TJAudioFormat.JavaClass.CHANNEL_IN_MONO;
-  audioFormat := TJAudioFormat.JavaClass.ENCODING_PCM_FLOAT;
-  minBufSize := TJAudioRecord.JavaClass.getMinBufferSize(sampleRate, channelConfig, audioFormat);
-
-  FBytes := TJavaArray<Single>.Create(minBufSize div SizeOf(Single));
-  FRecorder := TJAudioRecord.JavaClass.init(TJMediaRecorder_AudioSource.JavaClass.MIC, sampleRate, channelConfig, audioFormat, minBufSize);
+  FAudioCapturado := [];
 
   FRecorder.startRecording;
 
@@ -165,7 +179,7 @@ begin
       System.Move(FBytes.Data^, Bytes[0], Len);
 
     // Pacote de audio capturado -> Bytes
-    AudioCapturado := AudioCapturado + Bytes;
+    FAudioCapturado := FAudioCapturado + Bytes;
   end;
 end;
 
@@ -199,7 +213,8 @@ begin
     Exit;
   end;
 
-//  wav.SaveWaveToFile(sampleRate, 16, AudioCapturado, TPath.Combine(TPath.GetSharedMusicPath, 'teste.wav'));
+  wav.Teste(TPath.Combine(TPath.GetSharedMusicPath, 'teste.wav'));
+//  wav.SaveWaveToFile(FSampleRate, 16, FAudioCapturado, TPath.Combine(TPath.GetSharedMusicPath, 'teste.wav'));
 end;
 
 procedure TInicio.btnDenoiseClick(Sender: TObject);
@@ -214,43 +229,26 @@ begin
   System.FillChar(Entrada, SizeOf(Entrada), 0);
   System.FillChar(Saida, SizeOf(Saida), 0);
 
-  for I := 0 to Length(AudioCapturado) -1 do
+  for I := 0 to Length(FAudioCapturado) -1 do
   begin
     if (I > 0) and (I mod 480 = 0) then
     begin
       Denoiser.Process(Entrada, Saida);
 
       for K := 0 to Length(Saida) -1 do
-        AudioCapturado[I - 480 + K] := Saida[K];
+        FAudioCapturado[I - 480 + K] := Saida[K];
 
       J := 0;
     end;
 
-    Entrada[J] := AudioCapturado[I];
+    Entrada[J] := FAudioCapturado[I];
     Inc(J);
   end;
 end;
 
 procedure TInicio.btnReproduzirClick(Sender: TObject);
-var
-  trackmin: Integer;
 begin
-  trackmin := TJAudioTrack.JavaClass.getMinBufferSize(
-    sampleRate,
-    TJAudioFormat.JavaClass.CHANNEL_OUT_MONO,
-    TJAudioFormat.JavaClass.ENCODING_PCM_16BIT
-  );
-
-  FPlay := TJAudioTrack.JavaClass.init(
-    TJAudioManager.JavaClass.STREAM_MUSIC,
-    sampleRate,
-    TJAudioFormat.JavaClass.CHANNEL_OUT_MONO,
-    TJAudioFormat.JavaClass.ENCODING_PCM_16BIT,
-    trackmin,
-    TJAudioTrack.JavaClass.MODE_STREAM
-  );
-
-  (FPlay as JAudioTrack).play;
+  (FPlayer as JAudioTrack).play;
   ThreadLoopReproducao := TTask.Run(LoopReproducao);
 end;
 
@@ -264,26 +262,26 @@ begin
   SetLength(Bytes, FBytes.Length);
 
   J := 0;
-  for I := 0 to Length(AudioCapturado) -1 do
+  for I := 0 to Length(FAudioCapturado) -1 do
   begin
     if (I > 0) and (I mod FBytes.Length = 0) then
     begin
       Audio := TJavaArray<Single>.Create(Length(Bytes));
       if Length(Bytes) > 0 then
         System.Move(Bytes[0], Audio.Data^, Length(Bytes));
-      (FPlay as JAudioTrack).write(Audio, 0, Audio.Length, 0);
+      (FPlayer as JAudioTrack).write(Audio, 0, Audio.Length, 0);
 
       J := 0;
     end;
 
-    Bytes[J] := AudioCapturado[I];
+    Bytes[J] := FAudioCapturado[I];
     Inc(J);
   end;
 end;
 
 procedure TInicio.btnPararReproducaoClick(Sender: TObject);
 begin
-  (FPlay as JAudioTrack).stop;
+  (FPlayer as JAudioTrack).stop;
 end;
 
 end.
