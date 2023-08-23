@@ -3,10 +3,11 @@ object Inicio: TInicio
   Top = 0
   Caption = 'Captura Audio'
   ClientHeight = 480
-  ClientWidth = 271
+  ClientWidth = 272
   FormFactor.Width = 320
   FormFactor.Height = 480
   FormFactor.Devices = [Desktop]
+  OnCreate = FormCreate
   DesignerMasterStyle = 3
   object btnCapturar: TButton
     Align = Top
@@ -15,7 +16,7 @@ object Inicio: TInicio
     Margins.Right = 20.000000000000000000
     Position.X = 20.000000000000000000
     Position.Y = 77.000000000000000000
-    Size.Width = 231.000000000000000000
+    Size.Width = 232.000000000000000000
     Size.Height = 57.000000000000000000
     Size.PlatformDefault = False
     TabOrder = 3
@@ -29,7 +30,7 @@ object Inicio: TInicio
     Margins.Right = 20.000000000000000000
     Position.X = 20.000000000000000000
     Position.Y = 10.000000000000000000
-    Size.Width = 231.000000000000000000
+    Size.Width = 232.000000000000000000
     Size.Height = 57.000000000000000000
     Size.PlatformDefault = False
     TabOrder = 4
@@ -43,7 +44,7 @@ object Inicio: TInicio
     Margins.Right = 20.000000000000000000
     Position.X = 20.000000000000000000
     Position.Y = 144.000000000000000000
-    Size.Width = 231.000000000000000000
+    Size.Width = 232.000000000000000000
     Size.Height = 57.000000000000000000
     Size.PlatformDefault = False
     TabOrder = 2
@@ -57,7 +58,7 @@ object Inicio: TInicio
     Margins.Right = 20.000000000000000000
     Position.X = 20.000000000000000000
     Position.Y = 211.000000000000000000
-    Size.Width = 231.000000000000000000
+    Size.Width = 232.000000000000000000
     Size.Height = 57.000000000000000000
     Size.PlatformDefault = False
     TabOrder = 0
@@ -71,7 +72,7 @@ object Inicio: TInicio
     Margins.Right = 20.000000000000000000
     Position.X = 20.000000000000000000
     Position.Y = 278.000000000000000000
-    Size.Width = 231.000000000000000000
+    Size.Width = 232.000000000000000000
     Size.Height = 57.000000000000000000
     Size.PlatformDefault = False
     TabOrder = 1
