@@ -9,6 +9,7 @@ type
 
 function Teste(const FileName: string): TWaveformSamples;
 procedure SaveWaveToFile(const SamplesPerSec: Integer; const BitsPerSample: Integer; const WaveData: TWaveformSamples; const FileName: string);
+function ConvertFloatToSmallInt(const floatData: TArray<Single>): TWaveformSamples;
 
 implementation
 
@@ -103,44 +104,43 @@ var
   Temp: Integer;
   ByteSize: Integer;
 begin
+  // Geração do cabeçalho WAV
+  SetLength(Header, 44); // Tamanho fixo do cabeçalho
+
+  case BitsPerSample of
+    16: ByteSize := SizeOf(SmallInt);
+    32: ByteSize := SizeOf(Integer);
+  else
+    raise Exception.Create('BitsPerSample não suportado!');
+  end;
+
+  // Escrever o cabeçalho RIFF
+  Move(BytesOf('RIFF')[0], Header[0], 4);
+  ChunkSize := Length(WaveData) * ByteSize + 36; // Tamanho total do arquivo - 8
+  Move(ChunkSize, Header[4], 4);
+  Move(BytesOf('WAVE')[0], Header[8], 4);
+
+  // Escrever o cabeçalho fmt
+  Move(BytesOf('fmt ')[0], Header[12], 4);
+  ChunkSize := 16; // Tamanho fixo para PCM
+  Move(ChunkSize, Header[16], 4);
+  Move(PCM, Header[20], 2); // Formato PCM
+  Move(Channels, Header[22], 2);
+  Move(SamplesPerSec, Header[24], 4);
+  Temp := SamplesPerSec * Channels * (BitsPerSample div 8);
+  Move(Temp, Header[28], 4);
+  Temp := Channels * (BitsPerSample div 8);
+  Move(Temp, Header[32], 2);
+  Move(BitsPerSample, Header[34], 2);
+
+  // Escrever o cabeçalho data
+  Move(BytesOf('data')[0], Header[36], 4);
+  FileSize := Length(WaveData) * ByteSize;
+  Move(FileSize, Header[40], 4);
+
   // Criação do stream de arquivo
   Stream := TFileStream.Create(FileName, fmCreate);
-  try
-    // Geração do cabeçalho WAV
-    SetLength(Header, 44); // Tamanho fixo do cabeçalho
-
-    case BitsPerSample of
-      16: ByteSize := SizeOf(SmallInt);
-      32: ByteSize := SizeOf(Integer);
-    else
-      raise Exception.Create('BitsPerSample não suportado!');
-    end;
-
-    // Escrever o cabeçalho RIFF
-    Move(BytesOf('RIFF')[0], Header[0], 4);
-    ChunkSize := Length(WaveData) * ByteSize + 36; // Tamanho total do arquivo - 8
-    Move(ChunkSize, Header[4], 4);
-    Move(BytesOf('WAVE')[0], Header[8], 4);
-
-    // Escrever o cabeçalho fmt
-    Move(BytesOf('fmt ')[0], Header[12], 4);
-    ChunkSize := 16; // Tamanho fixo para PCM
-    Move(ChunkSize, Header[16], 4);
-    Move(PCM, Header[20], 2); // Formato PCM
-    Move(Channels, Header[22], 2);
-    Move(SamplesPerSec, Header[24], 4);
-    Temp := SamplesPerSec * Channels * (BitsPerSample div 8);
-    Move(Temp, Header[28], 4);
-    Temp := Channels * (BitsPerSample div 8);
-    Move(Temp, Header[32], 2);
-    Move(BitsPerSample, Header[34], 2);
-
-    // Escrever o cabeçalho data
-    Move(BytesOf('data')[0], Header[36], 4);
-    FileSize := Length(WaveData) * ByteSize;
-    Move(FileSize, Header[40], 4);
-
-    // Gravação do cabeçalho no arquivo
+  try    // Gravação do cabeçalho no arquivo
     Stream.WriteBuffer(Header[0], Length(Header));
 
     // Gravação dos dados de amostra
@@ -171,6 +171,15 @@ begin
     Samples,
     FileName
   );
+end;
+
+function ConvertFloatToSmallInt(const floatData: TArray<Single>): TWaveformSamples;
+var
+  i: Integer;
+begin
+  SetLength(Result, Length(floatData));
+  for i := 0 to High(floatData) do
+    Result[i] := Round(floatData[i] * High(SmallInt));
 end;
 
 end.

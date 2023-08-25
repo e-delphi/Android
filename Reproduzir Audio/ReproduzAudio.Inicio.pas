@@ -177,16 +177,13 @@ procedure TInicio.LoopReproducao;
 var
   Audio: TJavaArray<Single>;
   I, J: Integer;
-  Bytes: TArray<Single>;
 begin
   for I := 0 to Pred(Length(FAudioCapturado)) do
   begin
-    Bytes := FAudioCapturado[I];
+    Audio := TJavaArray<Single>.Create(Length(FAudioCapturado[I]));
 
-    Audio := TJavaArray<Single>.Create(Length(Bytes));
-
-    for J := 0 to Length(Bytes) do
-      Audio.Items[J] := Bytes[J];
+    for J := 0 to Pred(Length(FAudioCapturado[I])) do
+      Audio.Items[J] := FAudioCapturado[I, J];
 
     (FPlayer AS JAudioTrack).write(Audio, 0, Audio.Length, 0);
   end;

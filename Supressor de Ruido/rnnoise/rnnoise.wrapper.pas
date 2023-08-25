@@ -21,7 +21,7 @@ type
   public
     constructor Create;
     destructor Destroy; override;
-    function Process(const Input: TAudioFrame; var Output: TAudioFrame): Single;
+    function Process(var Frame: TArray<Single>): Single;
   end;
 
 implementation
@@ -65,9 +65,32 @@ begin
   FreeLibrary(LIB_HND);
 end;
 
-function TDenoiser.Process(const Input: TAudioFrame; var Output: TAudioFrame): Single;
+function TDenoiser.Process(var Frame: TArray<Single>): Single;
+var
+  Input: TAudioFrame;
+  Output: TAudioFrame;
+  I, J, K, L: Integer;
 begin
-  Result := rnnoise_process_frame(state, @Output[0], @Input[0]);
+  J := 0;
+  L := 0;
+  for I := 0 to Pred(Length(Frame)) do
+  begin
+    if J = Pred(FRAME_SIZE) then
+    begin
+      Result := rnnoise_process_frame(state, @Output, @Input);
+      for K := 0 to Pred(FRAME_SIZE) do
+      begin
+        Frame[L] := Output[K] / High(SmallInt);
+        Inc(L);
+      end;
+      J := 0;
+    end
+    else
+    begin
+      Input[J] := Round(Frame[I] * High(SmallInt));
+      Inc(J);
+    end;
+  end;
 end;
 
 end.
