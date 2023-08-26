@@ -10,6 +10,7 @@ type
 function Teste(const FileName: string): TWaveformSamples;
 procedure SaveWaveToFile(const SamplesPerSec: Integer; const BitsPerSample: Integer; const WaveData: TWaveformSamples; const FileName: string);
 function ConvertFloatToSmallInt(const floatData: TArray<Single>): TWaveformSamples;
+function ConvertSmallIntToWaveformSamples(const floatData: TArray<SmallInt>): TWaveformSamples;
 
 implementation
 
@@ -180,6 +181,15 @@ begin
   SetLength(Result, Length(floatData));
   for i := 0 to High(floatData) do
     Result[i] := Round(floatData[i] * High(SmallInt));
+end;
+
+function ConvertSmallIntToWaveformSamples(const floatData: TArray<SmallInt>): TWaveformSamples;
+var
+  i: Integer;
+begin
+  SetLength(Result, Length(floatData));
+  for i := 0 to High(floatData) do
+    Result[i] := floatData[i];
 end;
 
 end.

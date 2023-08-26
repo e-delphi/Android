@@ -9,6 +9,7 @@ uses
   System.UITypes,
   System.Classes,
   System.Variants,
+  System.Math,
   FMX.Types,
   FMX.Controls,
   FMX.Forms,
@@ -49,6 +50,10 @@ type
     btnDenoise: TButton;
     btnSalvar: TButton;
     btnArmazenamento: TButton;
+    mm: TMemo;
+    lbDividir: TLabel;
+    swDividir: TSwitch;
+    btnLog: TButton;
     procedure btnCapturarClick(Sender: TObject);
     procedure btnPermissaoClick(Sender: TObject);
     procedure btnPararCapturaClick(Sender: TObject);
@@ -59,6 +64,7 @@ type
     procedure FormDestroy(Sender: TObject);
     procedure btnSalvarClick(Sender: TObject);
     procedure btnArmazenamentoClick(Sender: TObject);
+    procedure btnLogClick(Sender: TObject);
   private
     // Geral
     FAudioFormat: Integer;
@@ -212,7 +218,7 @@ end;
 procedure TInicio.btnSalvarClick(Sender: TObject);
 var
   Audio: TArray<Single>;
-  I, J: Integer;
+  I: Integer;
 begin
   if not PermissionsService.IsPermissionGranted(JStringToString(TJManifest_permission.JavaClass.WRITE_EXTERNAL_STORAGE)) then
   begin
@@ -227,12 +233,30 @@ begin
   wav.SaveWaveToFile(FSampleRate, 16, wav.ConvertFloatToSmallInt(Audio), TPath.Combine(TPath.GetSharedMusicPath, 'teste.wav'));
 end;
 
+procedure TInicio.btnLogClick(Sender: TObject);
+var
+  I: Integer;
+  s: String;
+  J: Integer;
+begin
+  s := '';
+  for I := 0 to Pred(Length(FAudioCapturado)) do
+  begin
+    s := s +'[';
+    for J := 0 to Min(Pred(Length(FAudioCapturado[I])), 9) do
+      s := s + FAudioCapturado[I, J].ToString +',';
+    s := s +']';
+  end;
+
+  mm.Lines.Add(s);
+end;
+
 procedure TInicio.btnDenoiseClick(Sender: TObject);
 var
   I: Integer;
 begin
   for I := 0 to Pred(Length(FAudioCapturado)) do
-    Denoiser.Process(FAudioCapturado[I]);
+    Denoiser.Process(FAudioCapturado[I], swDividir.IsChecked);
 end;
 
 procedure TInicio.btnReproduzirClick(Sender: TObject);

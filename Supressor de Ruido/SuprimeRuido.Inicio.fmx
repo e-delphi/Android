@@ -16,9 +16,9 @@ object Inicio: TInicio
     Margins.Top = 10.000000000000000000
     Margins.Right = 20.000000000000000000
     Position.X = 20.000000000000000000
-    Position.Y = 77.000000000000000000
+    Position.Y = 65.000000000000000000
     Size.Width = 328.000000000000000000
-    Size.Height = 57.000000000000000000
+    Size.Height = 45.000000000000000000
     Size.PlatformDefault = False
     TabOrder = 5
     Text = 'Capturar'
@@ -32,7 +32,7 @@ object Inicio: TInicio
     Position.X = 20.000000000000000000
     Position.Y = 10.000000000000000000
     Size.Width = 328.000000000000000000
-    Size.Height = 57.000000000000000000
+    Size.Height = 45.000000000000000000
     Size.PlatformDefault = False
     TabOrder = 7
     Text = 'Permiss'#227'o Capturar Audio'
@@ -44,9 +44,9 @@ object Inicio: TInicio
     Margins.Top = 10.000000000000000000
     Margins.Right = 20.000000000000000000
     Position.X = 20.000000000000000000
-    Position.Y = 144.000000000000000000
+    Position.Y = 120.000000000000000000
     Size.Width = 328.000000000000000000
-    Size.Height = 57.000000000000000000
+    Size.Height = 45.000000000000000000
     Size.PlatformDefault = False
     TabOrder = 4
     Text = 'Parar Captura'
@@ -58,9 +58,9 @@ object Inicio: TInicio
     Margins.Top = 10.000000000000000000
     Margins.Right = 20.000000000000000000
     Position.X = 20.000000000000000000
-    Position.Y = 412.000000000000000000
+    Position.Y = 340.000000000000000000
     Size.Width = 328.000000000000000000
-    Size.Height = 57.000000000000000000
+    Size.Height = 45.000000000000000000
     Size.PlatformDefault = False
     TabOrder = 0
     Text = 'Reproduzir'
@@ -72,9 +72,9 @@ object Inicio: TInicio
     Margins.Top = 10.000000000000000000
     Margins.Right = 20.000000000000000000
     Position.X = 20.000000000000000000
-    Position.Y = 479.000000000000000000
+    Position.Y = 395.000000000000000000
     Size.Width = 328.000000000000000000
-    Size.Height = 57.000000000000000000
+    Size.Height = 45.000000000000000000
     Size.PlatformDefault = False
     TabOrder = 3
     Text = 'Parar Reprodu'#231#227'o'
@@ -86,9 +86,9 @@ object Inicio: TInicio
     Margins.Top = 10.000000000000000000
     Margins.Right = 20.000000000000000000
     Position.X = 20.000000000000000000
-    Position.Y = 345.000000000000000000
+    Position.Y = 285.000000000000000000
     Size.Width = 328.000000000000000000
-    Size.Height = 57.000000000000000000
+    Size.Height = 45.000000000000000000
     Size.PlatformDefault = False
     TabOrder = 1
     Text = 'Remover Ruido'
@@ -100,9 +100,9 @@ object Inicio: TInicio
     Margins.Top = 10.000000000000000000
     Margins.Right = 20.000000000000000000
     Position.X = 20.000000000000000000
-    Position.Y = 278.000000000000000000
+    Position.Y = 230.000000000000000000
     Size.Width = 328.000000000000000000
-    Size.Height = 57.000000000000000000
+    Size.Height = 45.000000000000000000
     Size.PlatformDefault = False
     TabOrder = 2
     Text = 'Salvar WAV'
@@ -114,12 +114,50 @@ object Inicio: TInicio
     Margins.Top = 10.000000000000000000
     Margins.Right = 20.000000000000000000
     Position.X = 20.000000000000000000
-    Position.Y = 211.000000000000000000
+    Position.Y = 175.000000000000000000
     Size.Width = 328.000000000000000000
-    Size.Height = 57.000000000000000000
+    Size.Height = 45.000000000000000000
     Size.PlatformDefault = False
     TabOrder = 6
     Text = 'Permiss'#227'o Armazenamento Interno'
     OnClick = btnArmazenamentoClick
+  end
+  object mm: TMemo
+    Touch.InteractiveGestures = [Pan, LongTap, DoubleTap]
+    DataDetectorTypes = []
+    Align = Client
+    Margins.Top = 10.000000000000000000
+    Size.Width = 368.000000000000000000
+    Size.Height = 167.000000000000000000
+    Size.PlatformDefault = False
+    TabOrder = 8
+    Viewport.Width = 360.000000000000000000
+    Viewport.Height = 159.000000000000000000
+  end
+  object lbDividir: TLabel
+    Align = Top
+    Margins.Top = 10.000000000000000000
+    Position.Y = 450.000000000000000000
+    Size.Width = 368.000000000000000000
+    Size.Height = 35.000000000000000000
+    Size.PlatformDefault = False
+    Text = '     Divis'#227'o'
+    TabOrder = 9
+    object swDividir: TSwitch
+      Align = Center
+      IsChecked = False
+      TabOrder = 4
+    end
+    object btnLog: TButton
+      Align = Right
+      Margins.Right = 20.000000000000000000
+      Position.X = 236.000000000000000000
+      Size.Width = 112.000000000000000000
+      Size.Height = 35.000000000000000000
+      Size.PlatformDefault = False
+      TabOrder = 5
+      Text = 'Log'
+      OnClick = btnLogClick
+    end
   end
 end

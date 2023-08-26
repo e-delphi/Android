@@ -21,7 +21,7 @@ type
   public
     constructor Create;
     destructor Destroy; override;
-    function Process(var Frame: TArray<Single>): Single;
+    function Process(var Frame: TArray<Single>; dividir: Boolean): Single;
   end;
 
 implementation
@@ -65,30 +65,58 @@ begin
   FreeLibrary(LIB_HND);
 end;
 
-function TDenoiser.Process(var Frame: TArray<Single>): Single;
+function TDenoiser.Process(var Frame: TArray<Single>; dividir: Boolean): Single;
 var
   Input: TAudioFrame;
   Output: TAudioFrame;
   I, J, K, L: Integer;
 begin
-  J := 0;
-  L := 0;
-  for I := 0 to Pred(Length(Frame)) do
+  if dividir then
   begin
-    if J = Pred(FRAME_SIZE) then
+    J := 0;
+    L := 0;
+    Result := 0;
+    for I := 0 to Pred(Length(Frame)) do
     begin
-      Result := rnnoise_process_frame(state, @Output, @Input);
-      for K := 0 to Pred(FRAME_SIZE) do
+      if J = Pred(FRAME_SIZE) then
       begin
-        Frame[L] := Output[K] / High(SmallInt);
-        Inc(L);
+        Result := rnnoise_process_frame(state, @Output, @Input);
+        for K := 0 to Pred(FRAME_SIZE) do
+        begin
+          Frame[L] := Output[K] / 32767;
+          Inc(L);
+        end;
+        J := 0;
+      end
+      else
+      begin
+        Input[J] := Frame[I] * 32767;
+        Inc(J);
       end;
-      J := 0;
-    end
-    else
+    end;
+  end
+  else
+  begin
+    J := 0;
+    L := 0;
+    Result := 0;
+    for I := 0 to Pred(Length(Frame)) do
     begin
-      Input[J] := Round(Frame[I] * High(SmallInt));
-      Inc(J);
+      if J = Pred(FRAME_SIZE) then
+      begin
+        Result := rnnoise_process_frame(state, @Output, @Input);
+        for K := 0 to Pred(FRAME_SIZE) do
+        begin
+          Frame[L] := Output[K];
+          Inc(L);
+        end;
+        J := 0;
+      end
+      else
+      begin
+        Input[J] := Frame[I];
+        Inc(J);
+      end;
     end;
   end;
 end;
